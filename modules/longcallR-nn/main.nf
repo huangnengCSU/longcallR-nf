@@ -1,106 +1,80 @@
 process LONGCALLR_NN_CALL {
     publishDir "${params.outdir}/longcallR_nn_call", mode: 'symlink'
-    apptainer 'apbiobio/longcallr-nn:0.1.0'
+    conda 'bioconda::bcftools bioconda::tabix'
 
     inputs:
-    path bam from minimap2_align_bam
-    path ref from params.ref
-    val read_basename = params.reads.baseName
-    val contigs from params.contigs
-    val min_depth from params.min_depth
-    val min_af from params.min_af
-    val min_bq from params.min_bq
-    val threads from params.threads
-    val platform from params.platform
-    val type from params.type
+    path bam
+    path ref
+    val contigs_list
 
     outputs:
-    path("${read_basename}.longcallR_nn.sort.vcf") into longcallR_nn_vcf
-    path("${read_basename}.longcallR_nn.sort.vcf.gz") into longcallR_nn_vcf_gz
-    path("${read_basename}.longcallR_nn.sort.vcf.gz.tbi") into longcallR_nn_vcf_gz_tbi
+    path "${basename}.longcallR_nn.sort.vcf", emit: ch_longcallR_nn_vcf
+    path "${basename}.longcallR_nn.sort.vcf.gz", emit: ch_longcallR_nn_vcf_gz
+    path "${basename}.longcallR_nn.sort.vcf.gz.tbi", emit: ch_longcallR_nn_vcf_gz_tbi
 
     script:
     """
-    # Create output directory based on fasta basename
-    FEATURE_DIR="${read_basename}_features/contig"
-    mkdir -p "${read_basename}_features"
-    PREDICTION_DIR="${read_basename}_predictions"
+    basename="${bam.baseName}"
+    FEATURE_DIR="${basename}_features"
+    mkdir -p ${FEATURE_DIR}
+    PREDICTION_DIR="${basename}_predictions"
     mkdir -p ${PREDICTION_DIR}
 
-
-
-    # Calculate number of parallel jobs that won't exceed the total threads
     threads_per_job=2
-    max_parallel_jobs=$(( ${threads} / ${threads_per_job} ))
+    max_parallel_jobs=$(( ${params.threads} / ${threads_per_job} ))
 
     # Run predictions for each contig in parallel
     parallel -j ${max_parallel_jobs} \
-    "longcallR_nn predict \
+    "longcallR_dp \
+    --mode predict \
     --bam-path '${bam}' \
     --ref-path '${ref}' \
-    --min-depth '${min_depth}' \
-    --min-alt-freq '${min_af}' \
-    --min-baseq '${min_bq}' \
+    --min-depth '${params.min_depth}' \
+    --min-alt-freq '${params.min_af}' \
+    --min-baseq '${params.min_bq}' \
     --threads '${threads_per_job}' \
-    --contig {1} \
-    --output '${FEATURE_DIR}_{1}'" ::: ${contigs[@]}
+    --contigs {1} \
+    --output '${FEATURE_DIR}/{1}'" ::: ${contigs_list[@]}
 
-    # Run longcallR_nn call for each contig in serial
-    # Validate platform and type parameters
-    case "${platform}" in
-        ont)
-            case "${type}" in
-                cDNA)
-                    config="config/wtc11_cdna.yaml"
-                    model="models/cdna_wtc11_nopass_resnet50_sgd.epoch30.chkpt"
-                    ;;
-                dRNA)
-                    config="config/gm12878_drna.yaml"
-                    model="models/drna_gm12878_nopass_resnet50_sgd.epoch30.chkpt"
-                    ;;
-                *)
-                    echo "Error: For 'ont' platform, type must be 'cDNA' or 'dRNA'. Given type: ${type}"
-                    exit 1
-                    ;;
-            esac
-            ;;
-        pb)
-            case "${type}" in
-                isoseq)
-                    config="config/hg002_isoseq.yaml"
-                    model="models/hg002_baylor_isoseq_nopass_resnet50_sgd.epoch30.chkpt"
-                    ;;
-                masseq)
-                    config="config/hg002_na24385_masseq.yaml"
-                    model="models/hg002_na24385_mix_nopass_resnet50_sgd.epoch30.chkpt"
-                    ;;
-                *)
-                    echo "Error: For 'pb' platform, type must be 'isoseq' or 'masseq'. Given type: ${type}"
-                    exit 1
-                    ;;
-            esac
-            ;;
-        *)
-            echo "Error: Platform must be 'ont' or 'pb'. Given platform: ${platform}"
-            exit 1
-            ;;
-    esac
+    // Validate params.platform and params.datatype parameters
+    if (params.platform == 'ont') {
+        if (params.datatype == 'cDNA') {
+            config = 'config/wtc11_cdna.yaml'
+            model = 'models/cdna_wtc11_nopass_resnet50_sgd.epoch30.chkpt'
+        } else if (params.datatype == 'dRNA') {
+            config = 'config/gm12878_drna.yaml'
+            model = 'models/drna_gm12878_nopass_resnet50_sgd.epoch30.chkpt'
+        } else {
+            error "Error: For 'ont' platform, params.datatype must be 'cDNA' or 'dRNA'. Given params.datatype: ${params.datatype}"
+        }
+    } else if (params.platform == 'pb') {
+        if (params.datatype == 'isoseq') {
+            config = 'config/hg002_isoseq.yaml'
+            model = 'models/hg002_baylor_isoseq_nopass_resnet50_sgd.epoch30.chkpt'
+        } else if (params.datatype == 'masseq') {
+            config = 'config/hg002_na24385_masseq.yaml'
+            model = 'models/hg002_na24385_mix_nopass_resnet50_sgd.epoch30.chkpt'
+        } else {
+            error "Error: For 'pb' platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
+        }
+    } else {
+        error "Error: Platform must be 'ont' or 'pb'. Given params.platform: ${params.platform}"
+    }
 
-    for ctg in ${contigs[@]}; do
+    for ctg in ${contigs_list[@]}; do
         longcallR_nn call \
         -config ${config} \
         -model ${model} \
-        -data '${FEATURE_DIR}_${ctg}' \
+        -data ${FEATURE_DIR}/${ctg} \
         -ref ${ref} \
-        -output '${PREDICTION_DIR}/${read_basename}_longcallR_nn_${ctg}.vcf' \
+        -output ${PREDICTION_DIR}/${basename}_longcallR_nn_${ctg}.vcf \
         -max_depth 200 \
         -batch_size 500
     done
 
-    # Concatenate all VCF files
-    bcftools concat ${PREDICTION_DIR}/${read_basename}_longcallR_nn_*.vcf -o ${read_basename}.longcallR_nn.vcf
-    bcftools sort ${read_basename}.longcallR_nn.vcf -o ${read_basename}.longcallR_nn.sort.vcf
-    bgzip ${read_basename}.longcallR_nn.sort.vcf > ${read_basename}.longcallR_nn.sort.vcf.gz
-    tabix -p vcf ${read_basename}.longcallR_nn.sort.vcf.gz
+    bcftools concat ${PREDICTION_DIR}/${basename}_longcallR_nn_*.vcf -o ${basename}.longcallR_nn.vcf
+    bcftools sort ${basename}.longcallR_nn.vcf -o ${basename}.longcallR_nn.sort.vcf
+    bgzip ${basename}.longcallR_nn.sort.vcf > ${basename}.longcallR_nn.sort.vcf.gz
+    tabix -p vcf ${basename}.longcallR_nn.sort.vcf.gz
     """
 }
