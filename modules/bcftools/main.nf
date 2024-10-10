@@ -1,4 +1,4 @@
-process CONCAT_SORT_VCF {
+process BCFTOOLS_CONCAT_SORT_VCF {
     tag "Concatenate and sort VCF files"
     conda 'bioconda::bcftools bioconda::tabix'
     publishDir "${params.outdir}", mode: 'symlink'
