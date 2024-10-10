@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 process MINIMAP2_ALIGN {
-    tag "Minimap2 alignment for ${reads.baseName}"
+    tag "Minimap2 alignment for ${params.sample_name}"
     conda 'bioconda::minimap2 bioconda::samtools'
     publishDir "${params.outdir}/minimap2_align", mode: 'symlink'
 
@@ -12,8 +12,9 @@ process MINIMAP2_ALIGN {
     path reads
     
     output:
-    path "${reads.baseName}.sort.bam", emit: ch_align_bam
-    path "${reads.baseName}.sort.bam.bai", emit: ch_align_bam_bai
+    path "${params.sample_name}.sort.bam", emit: ch_align_bam
+    path "${params.sample_name}.sort.bam.bai", emit: ch_align_bam_bai
+    path "${ref}.fai", emit: ch_ref_fai
 
     script:
     """
@@ -25,21 +26,28 @@ process MINIMAP2_ALIGN {
     echo "Platform: ${params.platform}"
     echo "Type: ${params.datatype}"
 
-    # minimap2 -ax splice:hq -uf ${ref} ${reads} -t ${params.threads} --secondary=no > ${reads.baseName}.sam
+    # minimap2 -ax splice:hq -uf ${ref} ${reads} -t ${params.threads} --secondary=no > ${params.sample_name}.sam
+
+    if [ ! -f "${ref}.fai" ]; then
+        echo "Index for reference ${ref} not found. Generating .fai index..."
+        samtools faidx ${ref}
+    else
+        echo ".fai index for ${ref} already exists."
+    fi
 
 
     if [ ${params.platform} == "ont" ]; then
         if [ ${params.datatype} == "cDNA" ]; then
-            minimap2 -ax splice ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${reads.baseName}.bam
+            minimap2 -ax splice ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${params.sample_name}.bam
         elif [ ${params.datatype} == "dRNA" ]; then
-            minimap2 -ax splice -uf -k14 ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${reads.baseName}.bam
+            minimap2 -ax splice -uf -k14 ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${params.sample_name}.bam
         else
             echo "Error: For 'ont' params.platform, params.datatype must be 'cDNA' or 'dRNA'. Given params.datatype: ${params.datatype}"
             exit 1
         fi
     elif [ ${params.platform} == "pb" ]; then
         if [ ${params.datatype} == "isoseq" ] || [ ${params.datatype} == "masseq" ]; then
-            minimap2 -ax splice:hq -uf ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${reads.baseName}.bam
+            minimap2 -ax splice:hq -uf ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${params.sample_name}.bam
         else
             echo "Error: For 'pb' params.platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
             exit 1
@@ -50,7 +58,7 @@ process MINIMAP2_ALIGN {
     fi
 
 
-    samtools sort -@ ${params.threads} -o ${reads.baseName}.sort.bam ${reads.baseName}.bam
-    samtools index -@ ${params.threads} ${reads.baseName}.sort.bam
+    samtools sort -@ ${params.threads} -o ${params.sample_name}.sort.bam ${params.sample_name}.bam
+    samtools index -@ ${params.threads} ${params.sample_name}.sort.bam
     """
 }
