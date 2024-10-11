@@ -46,7 +46,9 @@ process MINIMAP2_ALIGN {
             exit 1
         fi
     elif [ ${params.platform} == "pb" ]; then
-        if [ ${params.datatype} == "isoseq" ] || [ ${params.datatype} == "masseq" ]; then
+        if [ ${params.datatype} == "isoseq" ]; then
+            minimap2 -ax splice:hq ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${params.sample_name}.bam
+        elif [ ${params.datatype} == "masseq" ]; then
             minimap2 -ax splice:hq -uf ${ref} ${reads} -t ${params.threads} --secondary=no | samtools view -bSh -F 2308 - > ${params.sample_name}.bam
         else
             echo "Error: For 'pb' params.platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
