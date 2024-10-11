@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 process MINIMAP2_ALIGN {
     tag "Minimap2 alignment for ${params.sample_name}"
-    conda 'bioconda::minimap2==2.28-0 bioconda::samtools==1.17-0'
+    conda 'bioconda::minimap2==2.28 bioconda::samtools==1.17'
     publishDir "${params.outdir}/minimap2_align", mode: 'symlink'
 
     input:

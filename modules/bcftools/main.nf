@@ -1,6 +1,6 @@
 process BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN {
     tag "Concatenate and sort longcallR-nn VCF files"
-    conda 'bioconda::bcftools==1.17-0 bioconda::tabix==1.11-0'
+    conda 'bioconda::bcftools==1.17 bioconda::tabix==1.11'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
