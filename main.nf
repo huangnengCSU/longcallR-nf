@@ -1,17 +1,31 @@
 nextflow.enable.dsl=2
+
+
+// project parameters
 params.sample_name = null
 params.reads = null
 params.ref = null
-params.threads = 1
-// platform choices: ont, pb
+params.contigs = (1..22).collect { "chr${it}" } // Creates ['chr1', 'chr2', ..., 'chr22']
 params.platform = 'ont'
-// datatype choices: cDNA, dRNA, isoseq, masseq
 params.datatype = 'cDNA'
 params.outdir = null
+params.threads = 4
+params.memory = '20GB'
+params.gpu_device = 0
+
+// LongcallR_dp parameters
 params.min_depth = 6
 params.min_af = 0.1
 params.min_bq = 0
-params.contigs = (1..22).collect { "chr${it}" } // Creates ['chr1', 'chr2', ..., 'chr22']
+
+
+// LongcallR_nn parameters
+params.max_depth = 200
+params.batch_size = 256
+params.no_cuda = false
+
+// LongcallR parameters
+
 
 // Include the modules
 include { MINIMAP2_ALIGN } from './modules/minimap2/main.nf'
