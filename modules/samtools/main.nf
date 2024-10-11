@@ -1,6 +1,6 @@
 process SAMTOOLS_MERGE_SORT_INDEX {
     tag "samtools merge, sort and index"
-    conda 'bioconda::samtools>=1.17'
+    conda 'bioconda::samtools==1.17-0'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
