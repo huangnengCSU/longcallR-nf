@@ -16,7 +16,11 @@ params.contigs = (1..22).collect { "chr${it}" } // Creates ['chr1', 'chr2', ...,
 // Include the modules
 include { MINIMAP2_ALIGN } from './modules/minimap2/main.nf'
 include { LONGCALLR_NN_CALL } from './modules/longcallR-nn/main.nf'
-include { CONCAT_SORT_VCF } from './modules/bcftools/main.nf'
+include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN } from './modules/bcftools/main.nf'
+include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/main.nf'
+include { INSTALL_LONGCALLR } from './modules/longcallR/main.nf'
+include { LONGCALLR_CALL_PHASE } from './modules/longcallR/main.nf'
+include { SAMTOOLS_MERGE_SORT_INDEX } from './modules/samtools/main.nf'
 
 // Define the workflow
 workflow {
@@ -40,5 +44,28 @@ workflow {
     LONGCALLR_NN_CALL(contigs_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai)
     longcallR_nn_vcfs_ch = LONGCALLR_NN_CALL.out.longcallR_nn_vcfs_ch
     longcallR_nn_vcfs_ch.collect()  // Wait for all chromosomes to finish
-    CONCAT_SORT_VCF(longcallR_nn_vcfs_ch, "${params.sample_name}_longcallR_nn")
+    BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN(longcallR_nn_vcfs_ch, "${params.sample_name}_longcallR_nn")
+    ch_longcallR_nn_vcf = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN.out.vcf_file
+    ch_longcallR_nn_vcf_index = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN.out.vcf_index
+
+    // Install longcallR and run the LONGCALLR_CALL_PHASE process
+    INSTALL_LONGCALLR()
+    longcallr_binary_ch = INSTALL_LONGCALLR.out.longcallr_binary
+    
+    LONGCALLR_CALL_PHASE(longcallr_binary_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai, ch_longcallR_nn_vcf, ch_longcallR_nn_vcf_index, contigs_ch)
+
+    longcallR_vcfs_ch = LONGCALLR_CALL_PHASE.out.longcallR_vcfs_ch
+    longcallR_phased_bams_ch = LONGCALLR_CALL_PHASE.out.longcallR_phased_bams_ch
+
+    longcallR_vcfs_ch.collect()  // Wait for all chromosomes to finish
+    longcallR_phased_bams_ch.collect()  // Wait for all chromosomes to finish
+
+    BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR(longcallR_vcfs_ch, "${params.sample_name}_longcallR")
+    ch_longcallR_vcf = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR.out.vcf_file
+    ch_longcallR_vcf_index = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR.out.vcf_index
+
+    SAMTOOLS_MERGE_SORT_INDEX(longcallR_phased_bams_ch, "${params.sample_name}_longcallR")
+    ch_longcallR_bam = SAMTOOLS_MERGE_SORT_INDEX.out.bam_file
+    ch_longcallR_bam_index = SAMTOOLS_MERGE_SORT_INDEX.out.bam_index
+
 }
