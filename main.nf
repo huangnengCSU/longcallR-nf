@@ -26,6 +26,9 @@ params.no_cuda = false
 
 // LongcallR parameters
 
+// Isoquant parameters
+params.annotation = null
+
 
 // Include the modules
 include { MINIMAP2_ALIGN } from './modules/minimap2/main.nf'
@@ -35,6 +38,7 @@ include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/main.nf'
 include { INSTALL_LONGCALLR } from './modules/longcallR/main.nf'
 include { LONGCALLR_CALL_PHASE } from './modules/longcallR/main.nf'
 include { SAMTOOLS_MERGE_SORT_INDEX } from './modules/samtools/main.nf'
+include { ISOQUANT } from './modules/isoquant/main.nf'
 
 // Define the workflow
 workflow {
@@ -82,4 +86,6 @@ workflow {
     ch_longcallR_bam = SAMTOOLS_MERGE_SORT_INDEX.out.bam_file
     ch_longcallR_bam_index = SAMTOOLS_MERGE_SORT_INDEX.out.bam_index
 
+    ISOQUANT(ch_longcallR_bam, ch_longcallR_bam_index, ch_ref, ch_ref_fai, params.annotation)
+    ch_isoquant_outputs = ISOQUANT.out.isoquant_outputs_ch
 }
