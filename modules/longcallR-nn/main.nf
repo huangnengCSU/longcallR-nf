@@ -1,4 +1,6 @@
 process LONGCALLR_NN_CALL {
+    tag "${params.sample_name}_longcallR_nn_call"
+    conda 'python=3.9 bioconda::longcallr_nn==0.0.1'
     publishDir "${params.outdir}/longcallR_nn_call", mode: 'symlink'
 
     input:
@@ -10,7 +12,7 @@ process LONGCALLR_NN_CALL {
 
 
     output:
-    stdout
+    path "models/*", emit: models_ch
     path "${params.sample_name}_features"
     path "${params.sample_name}_predictions"
     path "${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_*.vcf", emit: longcallR_nn_vcfs_ch
@@ -19,6 +21,7 @@ process LONGCALLR_NN_CALL {
     """
     mkdir -p ${params.sample_name}_features
     mkdir -p ${params.sample_name}_predictions
+    mkdir -p models
 
     longcallR_dp \
     --mode predict \
@@ -31,14 +34,14 @@ process LONGCALLR_NN_CALL {
     --contigs '${contig}' \
     --output '${params.sample_name}_features/${contig}'
 
+    longcallR_nn download -d models
 
-    source /tools/miniconda3/bin/activate pytorch
     if [ ${params.no_cuda} == "true" ]; then
         if [ ${params.platform} == "ont" ]; then
             if [ ${params.datatype} == "cDNA" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/wtc11_cdna.yaml \
-                -model /tools/longcallR-nn/models/cdna_wtc11_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/ont_cdna_config.yaml \
+                -model models/ont_cdna_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
@@ -47,8 +50,8 @@ process LONGCALLR_NN_CALL {
                 --no_cuda
             elif [ ${params.datatype} == "dRNA" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/gm12878_drna.yaml \
-                -model /tools/longcallR-nn/models/drna_gm12878_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/ont_drna_config.yaml \
+                -model models/ont_drna_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
@@ -62,8 +65,8 @@ process LONGCALLR_NN_CALL {
         elif [ ${params.platform} == "pb" ]; then
             if [ ${params.datatype} == "isoseq" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/hg002_isoseq.yaml \
-                -model /tools/longcallR-nn/models/hg002_baylor_isoseq_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/pb_isoseq_config.yaml \
+                -model models/pb_isoseq_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
@@ -72,8 +75,8 @@ process LONGCALLR_NN_CALL {
                 --no_cuda
             elif [ ${params.datatype} == "masseq" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/hg002_na24385_masseq.yaml \
-                -model /tools/longcallR-nn/models/hg002_na24385_mix_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/pb_masseq_config.yaml \
+                -model models/pb_masseq_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
@@ -93,22 +96,22 @@ process LONGCALLR_NN_CALL {
         if [ ${params.platform} == "ont" ]; then
             if [ ${params.datatype} == "cDNA" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/wtc11_cdna.yaml \
-                -model /tools/longcallR-nn/models/cdna_wtc11_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/ont_cdna_config.yaml \
+                -model models/ont_cdna_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
                 -max_depth ${params.max_depth} \
-                -batch_size ${params.batch_size} 
+                -batch_size ${params.batch_size}
             elif [ ${params.datatype} == "dRNA" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/gm12878_drna.yaml \
-                -model /tools/longcallR-nn/models/drna_gm12878_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/ont_drna_config.yaml \
+                -model models/ont_drna_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
                 -max_depth ${params.max_depth} \
-                -batch_size ${params.batch_size} 
+                -batch_size ${params.batch_size}
             else
                 echo "Error: For 'ont' platform, datatype must be 'cDNA' or 'dRNA'. Given datatype: ${params.datatype}"
                 exit 1
@@ -116,22 +119,22 @@ process LONGCALLR_NN_CALL {
         elif [ ${params.platform} == "pb" ]; then
             if [ ${params.datatype} == "isoseq" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/hg002_isoseq.yaml \
-                -model /tools/longcallR-nn/models/hg002_baylor_isoseq_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/pb_isoseq_config.yaml \
+                -model models/pb_isoseq_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
                 -max_depth ${params.max_depth} \
-                -batch_size ${params.batch_size} 
+                -batch_size ${params.batch_size}
             elif [ ${params.datatype} == "masseq" ]; then
                 longcallR_nn call \
-                -config /tools/longcallR-nn/config/hg002_na24385_masseq.yaml \
-                -model /tools/longcallR-nn/models/hg002_na24385_mix_nopass_resnet50_sgd.epoch30.chkpt \
+                -config models/pb_masseq_config.yaml \
+                -model models/pb_masseq_model.chkpt \
                 -data ${params.sample_name}_features/${contig} \
                 -ref ${ref} \
                 -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
                 -max_depth ${params.max_depth} \
-                -batch_size ${params.batch_size} 
+                -batch_size ${params.batch_size}
             else
                 echo "Error: For 'pb' platform, datatype must be 'isoseq' or 'masseq'. Given datatype: ${params.datatype}"
                 exit 1
