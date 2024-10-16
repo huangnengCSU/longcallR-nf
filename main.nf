@@ -10,7 +10,7 @@ params.platform = 'ont'
 params.datatype = 'cDNA'
 params.outdir = null
 params.threads = 4
-params.memory = '20GB'
+params.memory = '200GB'
 params.gpu_device = 0
 
 // LongcallR_dp parameters
