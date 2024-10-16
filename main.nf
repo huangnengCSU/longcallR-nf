@@ -32,6 +32,7 @@ params.annotation = null
 
 // Include the modules
 include { MINIMAP2_ALIGN } from './modules/minimap2/main.nf'
+include { INSTALL_LONGCALLR_DP } from './modules/longcallR-nn/main.nf'
 include { LONGCALLR_NN_CALL } from './modules/longcallR-nn/main.nf'
 include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN } from './modules/bcftools/main.nf'
 include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/main.nf'
@@ -58,8 +59,12 @@ workflow {
     ch_ref = Channel.fromPath(params.ref)
     ch_ref_fai = MINIMAP2_ALIGN.out.ch_ref_fai
 
+    // Install longcallR_dp
+    INSTALL_LONGCALLR_DP()
+    longcallr_dp_binary_ch = INSTALL_LONGCALLR_DP.out.longcallr_dp_binary
+
     // Run the LONGCALLR_NN_CALL process, collect the output in a channel
-    LONGCALLR_NN_CALL(contigs_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai)
+    LONGCALLR_NN_CALL(longcallr_dp_binary_ch, contigs_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai)
     longcallR_nn_vcfs_ch = LONGCALLR_NN_CALL.out.longcallR_nn_vcfs_ch
     longcallR_nn_vcfs_ch.collect()  // Wait for all chromosomes to finish
     BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN(longcallR_nn_vcfs_ch, "${params.sample_name}_longcallR_nn")

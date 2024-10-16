@@ -1,9 +1,24 @@
+process INSTALL_LONGCALLR_DP {
+    tag "Install longcallR_dp"
+
+    output:
+    path "longcallR-nn/longcallR_dp/target/release/longcallR_dp", emit: longcallr_dp_binary
+
+    script:
+    """
+    git clone https://github.com/huangnengCSU/longcallR-nn.git
+    cd longcallR-nn/longcallR_dp
+    cargo build --release
+    """
+}
+
 process LONGCALLR_NN_CALL {
     tag "${params.sample_name}_longcallR_nn_call"
     conda 'python=3.9 bioconda::longcallr_nn==0.0.1'
     publishDir "${params.outdir}/longcallR_nn_call", mode: 'symlink'
 
     input:
+        path longcallr_dp_binary
         val contig  // Channel of contigs
         path bam   // Channel of BAM file
         path bam_bai    // Channel of BAM index file
@@ -23,7 +38,7 @@ process LONGCALLR_NN_CALL {
     mkdir -p ${params.sample_name}_predictions
     mkdir -p models
 
-    longcallR_dp \
+    ./${longcallr_dp_binary} \
     --mode predict \
     --bam-path '${bam}' \
     --ref-path '${ref}' \
