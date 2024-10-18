@@ -19,7 +19,7 @@ process LONGCALLR_NN_CALL {
 
     input:
         path longcallr_dp_binary
-        val contig  // Channel of contigs
+        each contig  // Channel of contigs
         path bam   // Channel of BAM file
         path bam_bai    // Channel of BAM index file
         path ref    // Channel of reference genome
@@ -27,10 +27,10 @@ process LONGCALLR_NN_CALL {
 
 
     output:
-    path "models/*", emit: models_ch
-    path "${params.sample_name}_features"
-    path "${params.sample_name}_predictions"
-    path "${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_*.vcf", emit: longcallR_nn_vcfs_ch
+    path "models/*"
+    path "${params.sample_name}_features/*"
+    path "${params.sample_name}_predictions/*"
+    path "${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf", emit: longcallR_nn_vcfs_ch
 
     script:
     """

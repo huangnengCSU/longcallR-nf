@@ -27,11 +27,11 @@ process LONGCALLR_CALL_PHASE {
     path ref_index
     path vcf_file
     path vcf_index
-    val contig  // Channel of contigs
+    each contig  // Channel of contigs
 
     output:
-    path "${params.sample_name}_longcallR_*.vcf", emit: longcallR_vcfs_ch
-    path "${params.sample_name}_longcallR_*.phased.bam", emit: longcallR_phased_bams_ch
+    path "${params.sample_name}_longcallR_${contig}.vcf", emit: longcallR_vcfs_ch
+    path "${params.sample_name}_longcallR_${contig}.phased.bam", emit: longcallR_phased_bams_ch
 
     script:
     """
