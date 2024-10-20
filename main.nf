@@ -31,15 +31,15 @@ params.annotation = null
 
 
 // Include the modules
-include { MINIMAP2_ALIGN } from './modules/minimap2/main.nf'
-include { INSTALL_LONGCALLR_DP } from './modules/longcallR-nn/main.nf'
-include { LONGCALLR_NN_CALL } from './modules/longcallR-nn/main.nf'
-include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN } from './modules/bcftools/main.nf'
-include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/main.nf'
-include { INSTALL_LONGCALLR } from './modules/longcallR/main.nf'
-include { LONGCALLR_CALL_PHASE } from './modules/longcallR/main.nf'
-include { SAMTOOLS_MERGE_SORT_INDEX } from './modules/samtools/main.nf'
-include { ISOQUANT } from './modules/isoquant/main.nf'
+include { MINIMAP2_ALIGN } from './modules/minimap2/minimap2.nf'
+include { INSTALL_LONGCALLR_DP } from './modules/longcallR-nn/longcallR-nn.nf'
+include { LONGCALLR_NN_CALL } from './modules/longcallR-nn/longcallR-nn.nf'
+include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN } from './modules/bcftools/bcftools.nf'
+include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/bcftools.nf'
+include { INSTALL_LONGCALLR } from './modules/longcallR/longcallR.nf'
+include { LONGCALLR_CALL_PHASE } from './modules/longcallR/longcallR.nf'
+include { SAMTOOLS_MERGE_SORT_INDEX } from './modules/samtools/samtools.nf'
+include { ISOQUANT } from './modules/isoquant/isoquant.nf'
 
 // Define the workflow
 workflow {
