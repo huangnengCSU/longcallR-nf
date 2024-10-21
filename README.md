@@ -10,7 +10,7 @@ nextflow run main.nf \
 --platform pb \ # choice: pb/ont
 --datatype masseq \ # for pb: masseq/isoseq, for ont: cDNA/dRNA
 --outdir /path/to/outdir \
---annotation /path/to/gencode.v44.annotation.gtf \  # only support for gtf file, isoquant doesn't support gff file
+--annotation /path/to/gencode.v44.annotation.gtf \  # only support for gtf file, isoquant has issue with gff3 file
 --threads 50 \
 --threads_per_job 2 \   # setting of threads pools
 --no_cuda true  # true for cpu mode and false for gpu mode
@@ -28,7 +28,7 @@ nextflow run main.nf \
 --platform pb \ # choice: pb/ont
 --datatype masseq \ # for pb: masseq/isoseq, for ont: cDNA/dRNA
 --outdir /path/to/outdir \
---annotation /path/to/gencode.v44.annotation.gtf \  # only support for gtf file, isoquant doesn't support gff file
+--annotation /path/to/gencode.v44.annotation.gtf \  # only support for gtf file, isoquant has issue with gff3 file
 --threads 50 \
 --threads_per_job 2 \   # setting of threads pools
 --no_cuda true  # true for cpu mode and false for gpu mode
