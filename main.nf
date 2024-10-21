@@ -5,7 +5,7 @@ nextflow.enable.dsl=2
 params.sample_name = null
 params.reads = null
 params.ref = null
-params.contigs = (1..22).collect { "chr${it}" } // Creates ['chr1', 'chr2', ..., 'chr22']
+params.contigs = params.contigs ?: (1..22).collect { "chr${it}" } // Creates ['chr1', 'chr2', ..., 'chr22']
 params.platform = 'ont'
 params.datatype = 'cDNA'
 params.outdir = null
@@ -28,6 +28,10 @@ params.no_cuda = false
 
 // Isoquant parameters
 params.annotation = null
+
+
+// process parameters
+def contigs = params.contigs.split(",") as List
 
 
 // Include the modules
@@ -53,7 +57,7 @@ workflow {
     MINIMAP2_ALIGN(params.ref, params.reads)
 
     // Uncomment and add input parameters to run the LONGCALLR_NN_CALL process
-    contigs_ch = Channel.from(params.contigs)
+    contigs_ch = Channel.from(contigs)
     ch_align_bam = MINIMAP2_ALIGN.out.ch_align_bam
     ch_align_bam_bai = MINIMAP2_ALIGN.out.ch_align_bam_bai
     ch_ref = Channel.fromPath(params.ref)
