@@ -1,53 +1,23 @@
-process INSTALL_LONGCALLR_DP {
-    tag "Install longcallR_dp"
-
-    output:
-    path "longcallR-nn/longcallR_dp/target/release/longcallR_dp", emit: longcallr_dp_binary
-
-    script:
-    """
-    git clone https://github.com/huangnengCSU/longcallR-nn.git
-    cd longcallR-nn/longcallR_dp
-    cargo build --release
-    """
-}
-
 process LONGCALLR_NN_CALL {
     tag "${params.sample_name}_longcallR_nn_call"
     conda 'python==3.9 bioconda::longcallr_nn==0.0.1'
     publishDir "${params.outdir}/longcallR_nn_call", mode: 'symlink'
 
     input:
-        path longcallr_dp_binary
-        each contig  // Channel of contigs
-        path bam   // Channel of BAM file
-        path bam_bai    // Channel of BAM index file
+        each contig_feature
         path ref    // Channel of reference genome
         path ref_fai    // Channel of reference genome index file
 
 
     output:
     path "models/*"
-    path "${params.sample_name}_features/*"
     path "${params.sample_name}_predictions/*"
-    path "${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf", emit: longcallR_nn_vcfs_ch
+    path "${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf", emit: longcallR_nn_vcfs_ch
 
     script:
     """
-    mkdir -p ${params.sample_name}_features
     mkdir -p ${params.sample_name}_predictions
     mkdir -p models
-
-    ./${longcallr_dp_binary} \
-    --mode predict \
-    --bam-path '${bam}' \
-    --ref-path '${ref}' \
-    --min-depth '${params.min_depth}' \
-    --min-alt-freq '${params.min_af}' \
-    --min-baseq '${params.min_bq}' \
-    --threads '${params.threads}' \
-    --contigs '${contig}' \
-    --output '${params.sample_name}_features/${contig}'
 
     longcallR_nn download -d models
 
@@ -57,9 +27,9 @@ process LONGCALLR_NN_CALL {
                 longcallR_nn call \
                 -config models/ont_cdna_config.yaml \
                 -model models/ont_cdna_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size} \
                 --no_cuda
@@ -67,9 +37,9 @@ process LONGCALLR_NN_CALL {
                 longcallR_nn call \
                 -config models/ont_drna_config.yaml \
                 -model models/ont_drna_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size} \
                 --no_cuda
@@ -82,9 +52,9 @@ process LONGCALLR_NN_CALL {
                 longcallR_nn call \
                 -config models/pb_isoseq_config.yaml \
                 -model models/pb_isoseq_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size} \
                 --no_cuda
@@ -92,9 +62,9 @@ process LONGCALLR_NN_CALL {
                 longcallR_nn call \
                 -config models/pb_masseq_config.yaml \
                 -model models/pb_masseq_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size} \
                 --no_cuda
@@ -113,18 +83,18 @@ process LONGCALLR_NN_CALL {
                 longcallR_nn call \
                 -config models/ont_cdna_config.yaml \
                 -model models/ont_cdna_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size}
             elif [ ${params.datatype} == "dRNA" ]; then
                 longcallR_nn call \
                 -config models/ont_drna_config.yaml \
                 -model models/ont_drna_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size}
             else
@@ -136,18 +106,18 @@ process LONGCALLR_NN_CALL {
                 longcallR_nn call \
                 -config models/pb_isoseq_config.yaml \
                 -model models/pb_isoseq_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size}
             elif [ ${params.datatype} == "masseq" ]; then
                 longcallR_nn call \
                 -config models/pb_masseq_config.yaml \
                 -model models/pb_masseq_model.chkpt \
-                -data ${params.sample_name}_features/${contig} \
+                -data ${contig_feature} \
                 -ref ${ref} \
-                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig}.vcf \
+                -output ${params.sample_name}_predictions/${params.sample_name}_longcallR_nn_${contig_feature.baseName}.vcf \
                 -max_depth ${params.max_depth} \
                 -batch_size ${params.batch_size}
             else
