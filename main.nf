@@ -4,8 +4,9 @@ nextflow.enable.dsl=2
 // project parameters
 params.sample_name = null
 params.reads = null
+params.bam = null
 params.ref = null
-params.contigs = params.contigs ?: (1..22).collect { "chr${it}" } // Creates ['chr1', 'chr2', ..., 'chr22']
+params.contigs = null
 params.platform = 'ont'
 params.datatype = 'cDNA'
 params.outdir = null
@@ -31,7 +32,15 @@ params.annotation = null
 
 
 // process parameters
-def contigs = params.contigs.split(",") as List
+def contigs = params.contigs ? 
+              params.contigs.split(",") as List : 
+              (1..22).collect { "chr${it}" } // Default to ['chr1', ..., 'chr22']
+def reads = params.reads ? 
+            (params.reads instanceof String ? params.reads.split(",") as List : params.reads) : 
+            null
+
+println "Contigs: ${contigs}"
+println "Reads: ${reads}"
 
 
 // Include the modules
@@ -43,25 +52,36 @@ include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/bcftools
 include { INSTALL_LONGCALLR } from './modules/longcallR/longcallR.nf'
 include { LONGCALLR_CALL_PHASE } from './modules/longcallR/longcallR.nf'
 include { SAMTOOLS_MERGE_SORT_INDEX } from './modules/samtools/samtools.nf'
+include { SAMTOOLS_INDEX } from './modules/samtools/samtools.nf'
+include { SAMTOOLS_FAIDX } from './modules/samtools/samtools.nf'
 include { ISOQUANT } from './modules/isoquant/isoquant.nf'
 
 // Define the workflow
 workflow {
 
     // Check if the required parameters are provided
-    if (!params.reads || !params.ref) {
-        error "You must provide both --reads and --ref parameters."
+    if (!params.reads && !params.bam) {
+        error "You must provide either --reads or --bam parameter."
     }
 
-    // Run the Minimap2 alignment process
-    MINIMAP2_ALIGN(params.ref, params.reads)
+    if (params.reads != null && params.bam == null) {
+        MINIMAP2_ALIGN(params.ref, reads)
+        ch_align_bam = MINIMAP2_ALIGN.out.ch_align_bam
+        ch_align_bam_bai = MINIMAP2_ALIGN.out.ch_align_bam_bai
+        ch_ref = Channel.fromPath(params.ref)
+        ch_ref_fai = MINIMAP2_ALIGN.out.ch_ref_fai
+    } else if (params.reads == null && params.bam != null) {
+        ch_align_bam = Channel.fromPath(params.bam)
+        SAMTOOLS_INDEX(params.bam)
+        ch_align_bam_bai = SAMTOOLS_INDEX.out.bam_index
+        ch_ref = Channel.fromPath(params.ref)
+        SAMTOOLS_FAIDX(params.ref)
+        ch_ref_fai = SAMTOOLS_FAIDX.out.fasta_index
+    } else {
+        error "You must provide either --reads or --bam parameter."
+    }
 
-    // Uncomment and add input parameters to run the LONGCALLR_NN_CALL process
     contigs_ch = Channel.from(contigs)
-    ch_align_bam = MINIMAP2_ALIGN.out.ch_align_bam
-    ch_align_bam_bai = MINIMAP2_ALIGN.out.ch_align_bam_bai
-    ch_ref = Channel.fromPath(params.ref)
-    ch_ref_fai = MINIMAP2_ALIGN.out.ch_ref_fai
 
     // Install longcallR_dp
     INSTALL_LONGCALLR_DP()
