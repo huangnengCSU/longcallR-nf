@@ -18,3 +18,35 @@ process SAMTOOLS_MERGE_SORT_INDEX {
     samtools index -@ ${params.threads} ${prefix}.phased.sorted.bam
     """
 }
+
+process SAMTOOLS_INDEX {
+    tag "samtools index"
+    conda 'bioconda::samtools==1.17'
+
+    input:
+    path bam_file
+
+    output:
+    path "${bam_file}.bai", emit: bam_index
+
+    script:
+    """
+    samtools index -@ ${params.threads} ${bam_file}
+    """
+}
+
+process SAMTOOLS_FAIDX {
+    tag "samtools faidx"
+    conda 'bioconda::samtools==1.17'
+
+    input:
+    path fasta_file
+
+    output:
+    path "${fasta_file}.fai", emit: fasta_index
+
+    script:
+    """
+    samtools faidx ${fasta_file}
+    """
+}
