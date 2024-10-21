@@ -11,6 +11,8 @@ params.platform = 'ont'
 params.datatype = 'cDNA'
 params.outdir = null
 params.threads = 4
+params.threads_per_job = 4 < params.threads ? 4 : params.threads
+params.num_jobs = (params.threads/params.threads_per_job) as int
 params.memory = '200GB'
 params.gpu_device = 0
 
@@ -39,13 +41,11 @@ def reads = params.reads ?
             (params.reads instanceof String ? params.reads.split(",") as List : params.reads) : 
             null
 
-println "Contigs: ${contigs}"
-println "Reads: ${reads}"
-
 
 // Include the modules
 include { MINIMAP2_ALIGN } from './modules/minimap2/minimap2.nf'
-include { INSTALL_LONGCALLR_DP } from './modules/longcallR-nn/longcallR-nn.nf'
+include { INSTALL_LONGCALLR_DP } from './modules/longcallR-dp/longcallR-dp.nf'
+include { LONGCALLR_DP } from './modules/longcallR-dp/longcallR-dp.nf'
 include { LONGCALLR_NN_CALL } from './modules/longcallR-nn/longcallR-nn.nf'
 include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN } from './modules/bcftools/bcftools.nf'
 include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/bcftools.nf'
@@ -81,40 +81,40 @@ workflow {
         error "You must provide either --reads or --bam parameter."
     }
 
-    contigs_ch = Channel.from(contigs)
+    ch_contigs = Channel.from(contigs)
 
-    // Install longcallR_dp
+    // longcallR_dp
     INSTALL_LONGCALLR_DP()
-    longcallr_dp_binary_ch = INSTALL_LONGCALLR_DP.out.longcallr_dp_binary
+    ch_longcallr_dp_binary = INSTALL_LONGCALLR_DP.out.longcallr_dp_binary
+    LONGCALLR_DP(ch_longcallr_dp_binary, ch_contigs, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai)
+    ch_longcallR_dp_features_contigs = LONGCALLR_DP.out.longcallR_dp_features_contigs_ch
+    ch_longcallR_dp_features_contigs.collect().set { collected_longcallR_dp_features_contigs }  // Wait for all chromosomes to finish
 
-    // Run the LONGCALLR_NN_CALL process, collect the output in a channel
-    LONGCALLR_NN_CALL(longcallr_dp_binary_ch, contigs_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai)
+
+    // longcallR_nn
+    LONGCALLR_NN_CALL(collected_longcallR_dp_features_contigs, ch_ref, ch_ref_fai)
     ch_longcallR_nn_vcfs = LONGCALLR_NN_CALL.out.longcallR_nn_vcfs_ch
     ch_longcallR_nn_vcfs.collect().set { collected_longcallR_nn_vcfs }  // Wait for all chromosomes to finish
-
     BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN(collected_longcallR_nn_vcfs, "${params.sample_name}_longcallR_nn")
     ch_longcallR_nn_vcf = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN.out.vcf_file
     ch_longcallR_nn_vcf_index = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN.out.vcf_index
 
-    // Install longcallR and run the LONGCALLR_CALL_PHASE process
+    // longcallR
     INSTALL_LONGCALLR()
-    longcallr_binary_ch = INSTALL_LONGCALLR.out.longcallr_binary
-    
-    LONGCALLR_CALL_PHASE(longcallr_binary_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai, ch_longcallR_nn_vcf, ch_longcallR_nn_vcf_index, contigs_ch)
-
+    longcallr_binary_ch = INSTALL_LONGCALLR.out.longcallr_binary    
+    LONGCALLR_CALL_PHASE(longcallr_binary_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai, ch_longcallR_nn_vcf, ch_longcallR_nn_vcf_index, ch_contigs)
     longcallR_vcfs_ch = LONGCALLR_CALL_PHASE.out.longcallR_vcfs_ch
     longcallR_phased_bams_ch = LONGCALLR_CALL_PHASE.out.longcallR_phased_bams_ch
     longcallR_vcfs_ch.collect().set { collected_longcallR_vcfs }  // Wait for all chromosomes to finish
     longcallR_phased_bams_ch.collect().set { collected_longcallR_phased_bams }  // Wait for all chromosomes to finish
-
     BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR(collected_longcallR_vcfs, "${params.sample_name}_longcallR")
     ch_longcallR_vcf = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR.out.vcf_file
     ch_longcallR_vcf_index = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR.out.vcf_index
-
     SAMTOOLS_MERGE_SORT_INDEX(collected_longcallR_phased_bams, "${params.sample_name}_longcallR")
     ch_longcallR_bam = SAMTOOLS_MERGE_SORT_INDEX.out.bam_file
     ch_longcallR_bam_index = SAMTOOLS_MERGE_SORT_INDEX.out.bam_index
 
+    // isoquant
     ISOQUANT(ch_longcallR_bam, ch_longcallR_bam_index, ch_ref, ch_ref_fai, params.annotation)
     ch_isoquant_outputs = ISOQUANT.out.isoquant_outputs_ch
 }
