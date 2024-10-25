@@ -49,9 +49,12 @@ include { LONGCALLR_DP } from './modules/longcallR-dp/longcallR-dp.nf'
 include { LONGCALLR_NN_CALL } from './modules/longcallR-nn/longcallR-nn.nf'
 include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN } from './modules/bcftools/bcftools.nf'
 include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR } from './modules/bcftools/bcftools.nf'
+include { BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_EXON } from './modules/bcftools/bcftools.nf'
 include { INSTALL_LONGCALLR } from './modules/longcallR/longcallR.nf'
 include { LONGCALLR_CALL_PHASE } from './modules/longcallR/longcallR.nf'
+include { LONGCALLR_CALL_PHASE_EXON } from './modules/longcallR/longcallR.nf'
 include { SAMTOOLS_MERGE_SORT_INDEX } from './modules/samtools/samtools.nf'
+include { SAMTOOLS_MERGE_SORT_INDEX_EXON } from './modules/samtools/samtools.nf'
 include { SAMTOOLS_INDEX } from './modules/samtools/samtools.nf'
 include { SAMTOOLS_FAIDX } from './modules/samtools/samtools.nf'
 include { ISOQUANT } from './modules/isoquant/isoquant.nf'
@@ -103,16 +106,29 @@ workflow {
     INSTALL_LONGCALLR()
     longcallr_binary_ch = INSTALL_LONGCALLR.out.longcallr_binary    
     LONGCALLR_CALL_PHASE(longcallr_binary_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai, ch_longcallR_nn_vcf, ch_longcallR_nn_vcf_index, ch_contigs)
-    longcallR_vcfs_ch = LONGCALLR_CALL_PHASE.out.longcallR_vcfs_ch
-    longcallR_phased_bams_ch = LONGCALLR_CALL_PHASE.out.longcallR_phased_bams_ch
-    longcallR_vcfs_ch.collect().set { collected_longcallR_vcfs }  // Wait for all chromosomes to finish
-    longcallR_phased_bams_ch.collect().set { collected_longcallR_phased_bams }  // Wait for all chromosomes to finish
+    ch_longcallR_vcfs = LONGCALLR_CALL_PHASE.out.longcallR_vcfs_ch
+    ch_longcallR_phased_bams = LONGCALLR_CALL_PHASE.out.longcallR_phased_bams_ch
+    ch_longcallR_vcfs.collect().set { collected_longcallR_vcfs }  // Wait for all chromosomes to finish
+    ch_longcallR_phased_bams.collect().set { collected_longcallR_phased_bams }  // Wait for all chromosomes to finish
     BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR(collected_longcallR_vcfs, "${params.sample_name}_longcallR")
     ch_longcallR_vcf = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR.out.vcf_file
     ch_longcallR_vcf_index = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR.out.vcf_index
     SAMTOOLS_MERGE_SORT_INDEX(collected_longcallR_phased_bams, "${params.sample_name}_longcallR")
     ch_longcallR_bam = SAMTOOLS_MERGE_SORT_INDEX.out.bam_file
     ch_longcallR_bam_index = SAMTOOLS_MERGE_SORT_INDEX.out.bam_index
+
+    // longcallR exon
+    LONGCALLR_CALL_PHASE_EXON(longcallr_binary_ch, ch_align_bam, ch_align_bam_bai, ch_ref, ch_ref_fai, ch_longcallR_nn_vcf, ch_longcallR_nn_vcf_index, params.annotation, ch_contigs)
+    ch_longcallR_exon_vcfs = LONGCALLR_CALL_PHASE_EXON.out.longcallR_exon_vcfs_ch
+    ch_longcallR_exon_phased_bams = LONGCALLR_CALL_PHASE_EXON.out.longcallR_exon_phased_bams_ch
+    ch_longcallR_exon_vcfs.collect().set { collected_longcallR_exon_vcfs }  // Wait for all chromosomes to finish
+    ch_longcallR_exon_phased_bams.collect().set { collected_longcallR_exon_phased_bams }  // Wait for all chromosomes to finish
+    BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_EXON(collected_longcallR_exon_vcfs, "${params.sample_name}_longcallR_exon")
+    ch_longcallR_exon_vcf = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_EXON.out.vcf_file
+    ch_longcallR_exon_vcf_index = BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_EXON.out.vcf_index
+    SAMTOOLS_MERGE_SORT_INDEX_EXON(collected_longcallR_exon_phased_bams, "${params.sample_name}_longcallR_exon")
+    ch_longcallR_exon_bam = SAMTOOLS_MERGE_SORT_INDEX_EXON.out.bam_file
+    ch_longcallR_exon_bam_index = SAMTOOLS_MERGE_SORT_INDEX_EXON.out.bam_index
 
     // isoquant
     ISOQUANT(ch_longcallR_bam, ch_longcallR_bam_index, ch_ref, ch_ref_fai, params.annotation)
