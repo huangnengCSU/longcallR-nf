@@ -67,6 +67,7 @@ process SAMTOOLS_INDEX {
 
     input:
     path bam_file
+    val prev_ch
 
     output:
     path "${bam_file}.bai", emit: bam_index
@@ -83,6 +84,7 @@ process SAMTOOLS_FAIDX {
 
     input:
     path fasta_file
+    val prev_ch
 
     output:
     path "${fasta_file}.fai", emit: fasta_index

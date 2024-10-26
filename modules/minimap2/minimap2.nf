@@ -10,6 +10,7 @@ process MINIMAP2_ALIGN {
     input:
     path ref
     path reads
+    val prev_ch
     
     output:
     path "${params.sample_name}.sort.bam", emit: ch_align_bam

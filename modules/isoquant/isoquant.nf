@@ -9,6 +9,7 @@ process ISOQUANT {
     path ref
     path ref_fai
     path annotation
+    val prev_ch
 
     output:
     path "isoquant_output/${params.sample_name}/${params.sample_name}.*", emit: isoquant_outputs_ch

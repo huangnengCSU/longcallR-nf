@@ -1,6 +1,9 @@
 process INSTALL_LONGCALLR {
     tag "Install longcallR"
 
+    input:
+    val prev_ch
+
     output:
     path "longcallR/target/release/longcallR", emit: longcallr_binary
 
@@ -26,6 +29,7 @@ process ONLY_LONGCALLR_CALL_PHASE {
     path ref_file
     path ref_index
     each contig  // Channel of contigs
+    val prev_ch
 
     // Control the number of concurrent jobs with `maxForks`
     maxForks params.num_jobs
@@ -146,6 +150,7 @@ process LONGCALLR_CALL_PHASE_EXON {
     path vcf_index
     path annotation
     each contig  // Channel of contigs
+    val prev_ch
 
     // Control the number of concurrent jobs with `maxForks`
     maxForks params.num_jobs
