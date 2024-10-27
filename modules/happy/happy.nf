@@ -1,6 +1,6 @@
 process HAPPY {
     tag "Evaluate haplotype phasing"
-    conda 'python==2.7 bioconda::hap.py'
+    conda 'python==2.7.* bioconda::hap.py'
     publishDir "${params.outdir}/happy", mode: 'symlink'
 
     input:
