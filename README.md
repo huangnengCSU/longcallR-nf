@@ -1,4 +1,17 @@
 ## Quick Run
+Before running this pipeline, make sure that [Nextflow](https://www.nextflow.io/docs/latest/install.html) is installed. This workflow contains several steps:
+
+- minimap2 alignment
+- calling variants using `longcallR-nn` (Whole chromosome)
+- calling variants using `longcallR-nn + longcallR`, phasing (Whole chromosome)
+- calling variants using `longcallR-nn + longcallR`, phasing (Exon)
+- calling variants only using `longcallR`, phasing (Whole chromosome)
+- transcript analysis with IsoQuant
+### Clone the repo
+```bash
+git clone https://github.com/huangnengCSU/longcallR-nf.git
+cd longcallR-nf
+```
 ### run from reads file
 ```bash
 
