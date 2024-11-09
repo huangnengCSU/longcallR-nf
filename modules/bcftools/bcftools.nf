@@ -1,6 +1,5 @@
 process BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN {
     tag "Concatenate and sort longcallR-nn VCF files"
-    conda 'bioconda::bcftools==1.17 bioconda::tabix==1.11'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
@@ -22,7 +21,6 @@ process BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_NN {
 
 process BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR {
     tag "Concatenate and sort longcallR VCF files"
-    conda 'bioconda::bcftools bioconda::tabix'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
@@ -43,7 +41,6 @@ process BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR {
 
 process BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_EXON {
     tag "Concatenate and sort longcallR exon VCF files"
-    conda 'bioconda::bcftools bioconda::tabix'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
@@ -64,7 +61,6 @@ process BCFTOOLS_CONCAT_SORT_VCF_LONGCALLR_EXON {
 
 process BCFTOOLS_CONCAT_SORT_VCF_ONLY_LONGCALLR {
     tag "Concatenate and sort only longcallR VCF files"
-    conda 'bioconda::bcftools bioconda::tabix'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:

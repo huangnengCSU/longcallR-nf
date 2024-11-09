@@ -19,7 +19,6 @@ process INSTALL_LONGCALLR {
 
 process ONLY_LONGCALLR_CALL_PHASE {
     tag "only use longcallR to call SNPs and phase"
-    conda 'bioconda::samtools bioconda::bcftools bioconda::tabix'
     publishDir "${params.outdir}/only_longcallR", mode: 'symlink'
 
     input:
@@ -67,7 +66,6 @@ process ONLY_LONGCALLR_CALL_PHASE {
 
 process LONGCALLR_CALL_PHASE {
     tag "longcallR SNP calling and phasing"
-    conda 'bioconda::samtools bioconda::bcftools bioconda::tabix'
     publishDir "${params.outdir}/longcallR", mode: 'symlink'
 
     input:
@@ -137,7 +135,6 @@ process LONGCALLR_CALL_PHASE {
 
 process LONGCALLR_CALL_PHASE_EXON {
     tag "longcallR SNP calling and phasing only for exon region"
-    conda 'bioconda::samtools bioconda::bcftools bioconda::tabix'
     publishDir "${params.outdir}/longcallR_exon", mode: 'symlink'
 
     input:

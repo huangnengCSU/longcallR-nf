@@ -1,6 +1,5 @@
 process ISOQUANT {
     tag "Isoquant for ${params.sample_name}"
-    conda "python==3.9 bioconda::isoquant==3.6.0"
     publishDir "${params.outdir}/isoquant", mode: 'symlink'
 
     input:

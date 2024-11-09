@@ -1,6 +1,5 @@
 process WHATSHAP {
     tag "Whatshap for ${params.sample_name}"
-    conda "bioconda::whatshap=1.7"
     publishDir "${params.outdir}/whatshap", mode: 'symlink'
 
     input:

@@ -1,6 +1,5 @@
 process SAMTOOLS_MERGE_SORT_INDEX {
     tag "samtools merge, sort and index"
-    conda 'bioconda::samtools==1.17'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
@@ -21,7 +20,6 @@ process SAMTOOLS_MERGE_SORT_INDEX {
 
 process SAMTOOLS_MERGE_SORT_INDEX_EXON {
     tag "samtools merge, sort and index"
-    conda 'bioconda::samtools==1.17'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
@@ -42,7 +40,6 @@ process SAMTOOLS_MERGE_SORT_INDEX_EXON {
 
 process SAMTOOLS_MERGE_SORT_INDEX_ONLY {
     tag "samtools merge, sort and index"
-    conda 'bioconda::samtools==1.17'
     publishDir "${params.outdir}", mode: 'symlink'
 
     input:
@@ -63,7 +60,6 @@ process SAMTOOLS_MERGE_SORT_INDEX_ONLY {
 
 process SAMTOOLS_INDEX {
     tag "samtools index"
-    conda 'bioconda::samtools==1.17'
 
     input:
     path bam_file
@@ -80,7 +76,6 @@ process SAMTOOLS_INDEX {
 
 process SAMTOOLS_FAIDX {
     tag "samtools faidx"
-    conda 'bioconda::samtools==1.17'
 
     input:
     path fasta_file

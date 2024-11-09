@@ -1,3 +1,16 @@
+## Install requirements
+```bash
+conda create -n longcallR_nf_env python=3.9 -y
+conda activate longcallR_nf_env
+
+# install PyTorch gpu version (pytorch>=1.3)
+conda install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 pytorch-cuda=12.4 -c pytorch -c nvidia -y
+# or install PyTorch cpu version (pytorch>=1.3)
+conda install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 cpuonly -c pytorch -y
+
+conda install -c bioconda -c conda-forge nextflow pysam longcallr_nn isoquant whatshap minimap2 samtools bcftools tabix -y
+```
+
 ## Quick Run
 Before running this pipeline, make sure that [Nextflow](https://www.nextflow.io/docs/latest/install.html) is installed. This workflow contains several steps:
 

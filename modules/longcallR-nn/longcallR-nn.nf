@@ -1,6 +1,5 @@
 process LONGCALLR_NN_CALL {
     tag "${params.sample_name}_longcallR_nn_call"
-    conda 'python==3.9 bioconda::longcallr_nn==0.0.1'
     publishDir "${params.outdir}/longcallR_nn_call", mode: 'symlink'
 
     input:
