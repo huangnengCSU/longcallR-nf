@@ -8,7 +8,7 @@ mamba install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 pytorch-cuda=
 # or install PyTorch cpu version (pytorch>=1.3)
 mamba install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 cpuonly -c pytorch -y
 
-mamba install nextflow pysam longcallr_nn isoquant whatshap minimap2 samtools bcftools tabix -y
+mamba install nextflow pysam longcallr_nn whatshap minimap2 samtools bcftools tabix -y
 ```
 
 ## Quick Run
@@ -19,7 +19,6 @@ Before running this pipeline, make sure that [Nextflow](https://www.nextflow.io/
 - calling variants using `longcallR-nn + longcallR`, phasing (Whole chromosome)
 - calling variants using `longcallR-nn + longcallR`, phasing (Exon)
 - calling variants only using `longcallR`, phasing (Whole chromosome)
-- transcript analysis with IsoQuant
 ### Clone the repo
 ```bash
 git clone https://github.com/huangnengCSU/longcallR-nf.git
@@ -36,7 +35,7 @@ nextflow run main.nf \
 --platform pb \ # choice: pb/ont
 --datatype masseq \ # for pb: masseq/isoseq, for ont: cDNA/dRNA
 --outdir /path/to/outdir \
---annotation /path/to/gencode.v44.annotation.gtf \  # only support for gtf file, isoquant has issue with gff3 file
+--annotation /path/to/gencode.v44.annotation.gtf \
 --threads 50 \
 --threads_per_job 2 \   # setting of threads pools
 --no_cuda true  # true for cpu mode and false for gpu mode
@@ -54,7 +53,7 @@ nextflow run main.nf \
 --platform pb \ # choice: pb/ont
 --datatype masseq \ # for pb: masseq/isoseq, for ont: cDNA/dRNA
 --outdir /path/to/outdir \
---annotation /path/to/gencode.v44.annotation.gtf \  # only support for gtf file, isoquant has issue with gff3 file
+--annotation /path/to/gencode.v44.annotation.gtf \
 --threads 50 \
 --threads_per_job 2 \   # setting of threads pools
 --no_cuda true  # true for cpu mode and false for gpu mode

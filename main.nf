@@ -29,7 +29,6 @@ params.no_cuda = false
 
 // LongcallR parameters
 
-// Isoquant parameters
 params.annotation = null
 
 
@@ -60,7 +59,6 @@ include { SAMTOOLS_MERGE_SORT_INDEX_EXON } from './modules/samtools/samtools.nf'
 include { SAMTOOLS_MERGE_SORT_INDEX_ONLY } from './modules/samtools/samtools.nf'
 include { SAMTOOLS_INDEX } from './modules/samtools/samtools.nf'
 include { SAMTOOLS_FAIDX } from './modules/samtools/samtools.nf'
-include { ISOQUANT } from './modules/isoquant/isoquant.nf'
 
 // Define the workflow
 workflow {
@@ -143,7 +141,4 @@ workflow {
     ch_only_longcallR_bam = SAMTOOLS_MERGE_SORT_INDEX_ONLY.out.bam_file
     ch_only_longcallR_bam_index = SAMTOOLS_MERGE_SORT_INDEX_ONLY.out.bam_index
 
-    // isoquant
-    ISOQUANT(ch_longcallR_bam, ch_longcallR_bam_index, ch_ref, ch_ref_fai, params.annotation, ch_only_longcallR_bam)
-    ch_isoquant_outputs = ISOQUANT.out.isoquant_outputs_ch
 }
