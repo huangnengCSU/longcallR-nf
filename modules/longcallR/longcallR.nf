@@ -43,18 +43,18 @@ process ONLY_LONGCALLR_CALL_PHASE {
     """
     if [ ${params.platform} == "pb" ]; then
         if [ ${params.datatype} == "isoseq" ]; then
-            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --platform "hifi" --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
+            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
         elif [ ${params.datatype} == "masseq" ]; then
-            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --platform "hifi" --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
+            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
         else
             echo "Error: For 'pb' params.platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
             exit 1
         fi
     elif [ ${params.platform} == "ont" ]; then
         if [ ${params.datatype} == "cDNA" ]; then
-            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --platform "ont" --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
+            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
         elif [ ${params.datatype} == "dRNA" ]; then
-            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --platform "ont" --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
+            ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_only_longcallR_${contig} --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
         else
             echo "Error: For 'ont' params.platform, params.datatype must be 'cDNA' or 'dRNA'. Given params.datatype: ${params.datatype}"
             exit 1
@@ -92,18 +92,18 @@ process LONGCALLR_CALL_PHASE {
     if [[ -z "${vcf_file}" ]]; then
         if [ ${params.platform} == "pb" ]; then
             if [ ${params.datatype} == "isoseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --platform "hifi" --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "masseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --platform "hifi" --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'pb' params.platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
                 exit 1
             fi
         elif [ ${params.platform} == "ont" ]; then
             if [ ${params.datatype} == "cDNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --platform "ont" --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "dRNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --platform "ont" --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'ont' params.platform, params.datatype must be 'cDNA' or 'dRNA'. Given params.datatype: ${params.datatype}"
                 exit 1
@@ -112,18 +112,18 @@ process LONGCALLR_CALL_PHASE {
     else
         if [ ${params.platform} == "pb" ]; then
             if [ ${params.datatype} == "isoseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --platform "hifi" --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "masseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --platform "hifi" --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'pb' params.platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
                 exit 1
             fi
         elif [ ${params.platform} == "ont" ]; then
             if [ ${params.datatype} == "cDNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --platform "ont" --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "dRNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --platform "ont" --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -o ${params.sample_name}_longcallR_${contig} --input-vcf ${vcf_file} --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'ont' params.platform, params.datatype must be 'cDNA' or 'dRNA'. Given params.datatype: ${params.datatype}"
                 exit 1
@@ -166,18 +166,18 @@ process LONGCALLR_CALL_PHASE_EXON {
     if [[ -z "${vcf_file}" ]]; then
         if [ ${params.platform} == "pb" ]; then
             if [ ${params.datatype} == "isoseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --platform "hifi" --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "masseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --platform "hifi" --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'pb' params.platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
                 exit 1
             fi
         elif [ ${params.platform} == "ont" ]; then
             if [ ${params.datatype} == "cDNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --platform "ont" --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "dRNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --platform "ont" --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'ont' params.platform, params.datatype must be 'cDNA' or 'dRNA'. Given params.datatype: ${params.datatype}"
                 exit 1
@@ -186,18 +186,18 @@ process LONGCALLR_CALL_PHASE_EXON {
     else
         if [ ${params.platform} == "pb" ]; then
             if [ ${params.datatype} == "isoseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --platform "hifi" --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --preset "hifi-isoseq" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "masseq" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --platform "hifi" --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --preset "hifi-masseq" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'pb' params.platform, params.datatype must be 'isoseq' or 'masseq'. Given params.datatype: ${params.datatype}"
                 exit 1
             fi
         elif [ ${params.platform} == "ont" ]; then
             if [ ${params.datatype} == "cDNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --platform "ont" --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --preset "ont-cdna" -x ${contig} -t ${params.threads_per_job}
             elif [ ${params.datatype} == "dRNA" ]; then
-                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --platform "ont" --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
+                ./${longcallr_binary} -b ${bam_file} -f ${ref_file} -a ${annotation.baseName} -o ${params.sample_name}_longcallR_exon_${contig} --input-vcf ${vcf_file} --preset "ont-drna" -x ${contig} -t ${params.threads_per_job}
             else
                 echo "Error: For 'ont' params.platform, params.datatype must be 'cDNA' or 'dRNA'. Given params.datatype: ${params.datatype}"
                 exit 1
